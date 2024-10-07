@@ -60,3 +60,37 @@ func NewApp() AppState {
 }
 
 type IdleEventHandler func() error
+
+func (app AppState) Cleanup() {
+
+	for _, wrapper := range app.outputs {
+		if wrapper != nil {
+			if wrapper.powerManager != nil {
+				wrapper.powerManager.Destroy()
+			}
+			if wrapper.Output != nil {
+				wrapper.Release()
+			}
+		}
+	}
+
+	if app.outputPowerManager != nil {
+		app.outputPowerManager.Destroy()
+	}
+
+	if app.idleNotifier != nil {
+		app.idleNotifier.Destroy()
+	}
+
+	if app.seat != nil {
+		app.seat.Release()
+	}
+
+	if app.registry != nil {
+		app.registry.Destroy()
+	}
+
+	if app.Display != nil {
+		app.Destroy()
+	}
+}

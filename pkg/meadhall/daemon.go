@@ -2,28 +2,34 @@ package meadhall
 
 import (
 	"fmt"
-	"sync"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/hkupty/meadhall/pkg/meadhall/config"
 	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
 )
 
+var (
+	signals chan os.Signal
+	done    chan bool
+)
+
 func Main() {
-	var waitGroup sync.WaitGroup
+	signals = make(chan os.Signal, 1)
+	done = make(chan bool, 1)
 	cfg := config.LoadConfig()
 
 	fmt.Println(cfg)
 	fmt.Println(cfg.Idle)
 
-	waitGroup.Add(1)
 	app := connectWaylandClient()
-
 	go func() {
-		defer waitGroup.Done()
 		for {
 			if err := app.StartEventLoop(); err != nil {
 				fmt.Printf("Got an error, finishing: %v", err)
+				done <- true
 				return
 			}
 		}
@@ -31,14 +37,18 @@ func Main() {
 
 	registerIdleHandlers(cfg.Idle, app)
 
-	waitGroup.Wait()
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	go cleanup(app)
+	<-done
 }
 
 func connectWaylandClient() *wayland.AppState {
 	waylandApp := wayland.NewApp()
 	err := waylandApp.InitWayland()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		done <- true
 	}
 
 	return &waylandApp
@@ -46,9 +56,14 @@ func connectWaylandClient() *wayland.AppState {
 }
 
 func registerIdleHandlers(cfg []config.IdleConfigItem, app *wayland.AppState) {
+	var retries int = 10
 
 	for !app.Ready() {
 		time.Sleep(1 * time.Second)
+		retries -= 1
+		if retries == 0 {
+			done <- true
+		}
 	}
 
 	fmt.Println("Registering idle handlers")
@@ -67,4 +82,13 @@ func registerIdleHandlers(cfg []config.IdleConfigItem, app *wayland.AppState) {
 
 		app.RegisterNewIdleEventHandler(idleConfig.Timeout*1000, idleHandler, resumedHandler)
 	}
+}
+
+func cleanup(app *wayland.AppState) {
+	signal := <-signals
+	fmt.Printf("\nGot %v signal\n", signal)
+	if app != nil {
+		app.Cleanup()
+	}
+	done <- true
 }
