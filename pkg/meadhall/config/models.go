@@ -10,7 +10,7 @@ type IdleConfigItem struct {
 }
 
 type IdleAction struct {
-	Type       string   `yaml:"type"`
-	Args       []string `yaml:"args,omitempty"`
-	ResumeArgs []string `yaml:"args,omitempty"`
+	Type     string   `yaml:"type"`
+	OnIdle   []string `yaml:"idle,omitempty"`
+	OnResume []string `yaml:"resume,omitempty"`
 }
