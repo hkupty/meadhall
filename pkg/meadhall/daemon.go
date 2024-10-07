@@ -1,7 +1,6 @@
 package meadhall
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -61,6 +60,9 @@ func registerIdleHandlers(cfg []config.IdleConfigItem, app *wayland.AppState) {
 		switch idleConfig.Action.Type {
 		case "output":
 			idleHandler, resumedHandler = outputHandler(idleConfig, app)
+
+		case "cmd":
+			idleHandler, resumedHandler = cmdHandler(idleConfig)
 		}
 
 		app.RegisterNewIdleEventHandler(idleConfig.Timeout*1000, idleHandler, resumedHandler)
