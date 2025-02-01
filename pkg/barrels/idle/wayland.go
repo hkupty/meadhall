@@ -1,47 +1,12 @@
-package meadhall
+package idle
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/hkupty/meadhall/pkg/meadhall/config"
 	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
 )
-
-var (
-	signals chan os.Signal
-	done    chan bool
-)
-
-func Main() {
-	signals = make(chan os.Signal, 1)
-	done = make(chan bool, 1)
-	cfg := config.LoadConfig()
-
-	fmt.Println(cfg)
-	fmt.Println(cfg.Idle)
-
-	serve()
-
-	// app := connectWaylandClient()
-	// go func() {
-	// 	for {
-	// 		if err := app.StartEventLoop(); err != nil {
-	// 			fmt.Printf("Got an error, finishing: %v", err)
-	// 			done <- true
-	// 			return
-	// 		}
-	// 	}
-	// }()
-	//
-	// registerIdleHandlers(cfg.Idle, app)
-	//
-	// signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-	// go cleanup(app)
-	<-done
-}
 
 func connectWaylandClient() *wayland.AppState {
 	waylandApp := wayland.NewApp()
