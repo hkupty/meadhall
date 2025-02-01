@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/hkupty/meadhall/api"
-	"github.com/hkupty/meadhall/pkg/meadhall/config"
-	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
+	"github.com/hkupty/meadhall/api/config"
+	"github.com/hkupty/meadhall/api/wayland"
 )
 
 var (
@@ -26,7 +26,7 @@ type App struct {
 
 func Main(appContext context.Context) {
 	waylandApp := wayland.NewApp()
-	err := waylandApp.InitWayland()
+	err := waylandApp.InitWayland(appContext)
 
 	if err != nil {
 		slog.Error("Could not connect to wayland, aborting", "error", err)
@@ -51,7 +51,7 @@ func Main(appContext context.Context) {
 }
 
 func (a *App) serve() {
-	cfg, err := config.LoadConfig()
+	_, err := config.LoadConfig()
 
 	if err != nil {
 		slog.Warn("Failed to get config, proceeding with defaults")

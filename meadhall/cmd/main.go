@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	pkg "github.com/hkupty/meadhall/pkg/meadhall"
+	"github.com/hkupty/meadhall/meadhall/pkg"
 )
 
 func main() {

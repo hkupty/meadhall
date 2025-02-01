@@ -3,7 +3,7 @@ package wayland
 import (
 	"github.com/rajveermalviya/go-wayland/wayland/client"
 
-	"github.com/hkupty/meadhall/pkg/meadhall/wayland/gen"
+	"github.com/hkupty/meadhall/api/wayland/gen"
 )
 
 // Wrapper over a [client.Display] object

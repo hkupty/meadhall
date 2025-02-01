@@ -8,7 +8,7 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/hkupty/meadhall/pkg/meadhall/wayland/gen"
+	"github.com/hkupty/meadhall/api/wayland/gen"
 	"github.com/rajveermalviya/go-wayland/wayland/client"
 )
 

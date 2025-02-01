@@ -1,4 +1,4 @@
-package meadhall
+package pkg
 
 import (
 	"errors"
@@ -7,8 +7,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/hkupty/meadhall/pkg/meadhall/config"
-	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
+	"github.com/hkupty/meadhall/api/config"
+	"github.com/hkupty/meadhall/api/wayland"
 )
 
 // Returns a pair of [wayland.IdleEventHandler] for when idling and resuming that turns on and off the

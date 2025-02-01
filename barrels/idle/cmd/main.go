@@ -1,7 +1,7 @@
 package main
 
 import (
-	pkg "github.com/hkupty/meadhall/pkg/barrels/idle"
+	pkg "github.com/hkupty/meadhall/idle_barrel/pkg"
 )
 
 func main() {

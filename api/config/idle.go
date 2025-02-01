@@ -1,6 +1,4 @@
-package models
-
-// github.com/hkupty/meadhall/pkg/barrels/idle/models
+package config
 
 type IdleAction struct {
 	Type     string   `yaml:"type"`

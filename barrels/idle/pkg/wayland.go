@@ -1,11 +1,11 @@
-package idle
+package pkg
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/hkupty/meadhall/pkg/meadhall/config"
-	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
+	"github.com/hkupty/meadhall/api/config"
+	"github.com/hkupty/meadhall/api/wayland"
 )
 
 func connectWaylandClient() *wayland.AppState {

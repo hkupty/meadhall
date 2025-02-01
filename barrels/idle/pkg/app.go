@@ -1,4 +1,4 @@
-package idle
+package pkg
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/hkupty/meadhall/api"
-	"github.com/hkupty/meadhall/pkg/meadhall/config"
+	"github.com/hkupty/meadhall/api/config"
 	"github.com/tinylib/msgp/msgp"
 )
 
