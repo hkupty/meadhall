@@ -1,8 +1,10 @@
 package wayland
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"maps"
 	"slices"
 
@@ -10,12 +12,11 @@ import (
 	"github.com/rajveermalviya/go-wayland/wayland/client"
 )
 
-func (app *AppState) InitWayland() error {
+func (app *AppState) InitWayland(appContext context.Context) error {
 	display, err := client.Connect("")
 
 	if err != nil {
-		// TODO proper log
-		fmt.Printf("Failed to connect to wayland server/compositor: %v \n", err)
+		slog.Warn("Failed to connect to wayland server/compositor", "error", err)
 		return err
 	}
 
@@ -24,7 +25,7 @@ func (app *AppState) InitWayland() error {
 	registry, err := display.GetRegistry()
 
 	if err != nil {
-		fmt.Printf("Failed to connect to get registry: %v \n", err)
+		slog.Warn("Failed to acquire a registry", "error", err)
 		return err
 	}
 
@@ -32,13 +33,20 @@ func (app *AppState) InitWayland() error {
 
 	app.registry.SetGlobalHandler(app.HandleRegistryEvents)
 
+	go app.StartEventLoop(appContext)
+
 	return nil
 }
 
-func (app *AppState) StartEventLoop() error {
+func (app *AppState) StartEventLoop(appContext context.Context) {
+	var err error
+	var attempts int
 	for {
-		if err := app.Context().Dispatch(); err != nil {
-			return err
+		if err = app.Context().Dispatch(); err != nil {
+			slog.Error("Wayland failed to dispatch", "error", err, "attempts", attempts)
+			if attempts > 2 {
+
+			}
 		}
 	}
 }

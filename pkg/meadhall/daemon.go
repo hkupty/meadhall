@@ -1,10 +1,14 @@
 package meadhall
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
+	"net"
 	"os"
 	"time"
 
+	"github.com/hkupty/meadhall/api"
 	"github.com/hkupty/meadhall/pkg/meadhall/config"
 	"github.com/hkupty/meadhall/pkg/meadhall/wayland"
 )
@@ -14,44 +18,50 @@ var (
 	done    chan bool
 )
 
-func Main() {
-	signals = make(chan os.Signal, 1)
-	done = make(chan bool, 1)
-	cfg := config.LoadConfig()
-
-	fmt.Println(cfg)
-	fmt.Println(cfg.Idle)
-
-	serve()
-
-	// app := connectWaylandClient()
-	// go func() {
-	// 	for {
-	// 		if err := app.StartEventLoop(); err != nil {
-	// 			fmt.Printf("Got an error, finishing: %v", err)
-	// 			done <- true
-	// 			return
-	// 		}
-	// 	}
-	// }()
-	//
-	// registerIdleHandlers(cfg.Idle, app)
-	//
-	// signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-	// go cleanup(app)
-	<-done
+type App struct {
+	socket     net.Listener
+	appContext context.Context
+	wayland    wayland.AppState
 }
 
-func connectWaylandClient() *wayland.AppState {
+func Main(appContext context.Context) {
 	waylandApp := wayland.NewApp()
 	err := waylandApp.InitWayland()
+
 	if err != nil {
-		fmt.Println(err)
-		done <- true
+		slog.Error("Could not connect to wayland, aborting", "error", err)
+		os.Exit(1)
 	}
 
-	return &waylandApp
+	context.AfterFunc(appContext, waylandApp.Cleanup)
+
+	sock, err := api.Socket(appContext, api.Daemon)
+
+	if err != nil {
+		slog.Error("Failed to start unix socket, thus unable to proceed", "error", err)
+		os.Exit(1)
+	}
+
+	defer sock.Close()
+	context.AfterFunc(appContext, func() { api.CleanupSocket(api.Daemon) })
+
+	app := App{socket: sock, appContext: appContext, wayland: waylandApp}
+
+	app.serve()
+}
+
+func (a *App) serve() {
+	cfg, err := config.LoadConfig()
+
+	if err != nil {
+		slog.Warn("Failed to get config, proceeding with defaults")
+	}
+
+	// Init wayland handlers async
+	go func() {
+		for !a.wayland.Ready() {
+		}
+	}()
 
 }
 
@@ -82,13 +92,4 @@ func registerIdleHandlers(cfg []config.IdleConfigItem, app *wayland.AppState) {
 
 		app.RegisterNewIdleEventHandler(idleConfig.Timeout*1000, idleHandler, resumedHandler)
 	}
-}
-
-func cleanup(app *wayland.AppState) {
-	signal := <-signals
-	fmt.Printf("\nGot %v signal\n", signal)
-	if app != nil {
-		app.Cleanup()
-	}
-	done <- true
 }
